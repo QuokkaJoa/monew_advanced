@@ -30,21 +30,17 @@ class CommentControllerTest extends ControllerTestSupport {
 
         // given
         CommentRequest commentRequest = CommentRequest.builder()
-                .articleId(UUID.randomUUID())
-                .orderBy("createdAt")
-                .direction("DESC")
-                .limit(10)
-                .cursor(null)
-                .after(null)
-                .requestUserId(null)
-                .build();
-
+            .articleId(UUID.randomUUID())
+            .orderBy("createdAt")
+            .direction("DESC")
+            .limit(10)
+            .build();
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/comments")
-                        .param("articleId", commentRequest.getArticleId().toString())
-                        .param("orderBy", commentRequest.getOrderBy())
-                        .param("direction", commentRequest.getDirection())
-                        .param("limit", String.valueOf(commentRequest.getLimit()))
+                        .param("articleId", commentRequest.articleId().toString())
+                        .param("orderBy", commentRequest.orderBy())
+                        .param("direction", commentRequest.direction())
+                        .param("limit", String.valueOf(commentRequest.limit()))
                         .header("Monew-Request-User-ID", userId))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk());
