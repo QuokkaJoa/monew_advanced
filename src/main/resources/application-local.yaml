@@ -1,0 +1,62 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    master:
+      jdbc-url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        idle-timeout: 60000
+
+    replica:
+      jdbc-url: jdbc:postgresql://${DB_REPLICA_HOST}:${DB_REPLICA_PORT}/${DB_NAME}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        idle-timeout: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        default_batch_fetch_size: 500
+        format_sql: true
+        use_sql_comments: true
+
+  sql:
+    init:
+      mode: always
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  port: ${APP_PORT:8080}
+
+logging:
+  level:
+    com.part2.monew: DEBUG
+
+monew:
+  storage:
+    s3:
+      accessKeyId: test-access-key
+      secretAccessKey: test-secret-key
+      region: ap-northeast-2
+      bucket: test-bucket
+  cloud:
+    slack:
+      webhook-url: test-webhook-url

@@ -1,7 +1,9 @@
 package com.part2.monew.config;
 
 import com.part2.monew.entity.DataSourceType;
+import java.util.Properties;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -31,6 +33,9 @@ import static com.part2.monew.config.DataSourceConfiguration.STANDBY_DATA_SOURCE
 @Configuration
 public class RoutingDataSourceConfiguration {
 
+
+    @Value("${spring.jpa.hibernate.ddl-auto}")
+    private String ddlAuto;
     private final String ROUTING_DATA_SOURCE = "ROUTING_DATA_SOURCE";
     private final String DATA_SOURCE = "DATA_SOURCE";
 
@@ -67,6 +72,12 @@ public class RoutingDataSourceConfiguration {
         entityManagerFactory.setPackagesToScan("com.part2.monew.entity");
         entityManagerFactory.setJpaVendorAdapter(this.jpaVendorAdapter());
         entityManagerFactory.setPersistenceUnitName("entityManager");
+        entityManagerFactory.setJpaVendorAdapter(this.jpaVendorAdapter());
+
+        // DDL 실행을 보장하기 위해 프로퍼티를 명시적으로 설정
+        Properties jpaProperties = new Properties();
+        jpaProperties.put("hibernate.hbm2ddl.auto", ddlAuto);
+        entityManagerFactory.setJpaProperties(jpaProperties);
         return entityManagerFactory;
     }
 

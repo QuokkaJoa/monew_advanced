@@ -85,7 +85,11 @@ services:
     restart: always
     networks:
       - app-network
-
+    depends_on:
+      db-master:
+        condition: service_healthy # Master가 완전히 준비될 때까지 기다림
+      redis:
+        condition: service_started
 volumes:
   postgres-master-data:
   postgres-standby-data:
@@ -93,4 +97,3 @@ volumes:
 
 networks:
   app-network:
-    external: true
