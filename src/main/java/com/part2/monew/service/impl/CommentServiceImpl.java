@@ -50,9 +50,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @DistributedCache(
         cacheName = "comments",
-        key = "#req.articleId + ':' + #req.limit",
-        waitTime = 5,
-        leaseTime = 10
+        key = "#req.articleId + ':' + #req.limit"
     )
     public CursorResponse findCommentsByArticleId(CommentRequest req, UUID userId) {
         List<CommentsManagement> list = commentRepository.findCommentsByArticleId(

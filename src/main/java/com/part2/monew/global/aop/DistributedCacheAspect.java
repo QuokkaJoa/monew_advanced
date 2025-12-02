@@ -1,7 +1,7 @@
 package com.part2.monew.global.aop;
 
 import com.part2.monew.global.annotation.DistributedCache;
-import java.lang.reflect.Method;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -62,7 +62,8 @@ public class DistributedCacheAspect {
       log.info("[Lock Acquired] Key: {}", lockKey);
 
       if (cache != null) {
-        Object cachedValue = cache.get(cacheKey) != null ? cache.get(cacheKey).get() : null;
+        Object cachedValue = cache.get(cacheKey) != null ? Objects.requireNonNull(
+            cache.get(cacheKey)).get() : null;
         if (cachedValue != null) {
           log.info("[Double-Checked Cache Hit] Key: {}", cacheKey);
           return cachedValue;

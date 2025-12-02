@@ -25,9 +25,7 @@ import static com.part2.monew.config.DataSourceConfiguration.STANDBY_DATA_SOURCE
 
 
 @EnableJpaRepositories(
-        basePackages = {"com.part2.monew.repository"},
-        entityManagerFactoryRef = "entityManagerFactory",
-        transactionManagerRef = "transactionManager"
+        basePackages = {"com.part2.monew.repository"}
 )
 @Profile("!test")
 @Configuration
