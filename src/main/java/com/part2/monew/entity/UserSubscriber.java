@@ -1,6 +1,8 @@
 package com.part2.monew.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,9 +14,11 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Getter
 @Setter
+@Builder
 @Table(name = "users_subscribes", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"user_id", "interest_id"})
 })

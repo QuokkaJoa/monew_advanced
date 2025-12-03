@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,4 +27,8 @@ public interface UserSubscriberRepository extends JpaRepository<UserSubscriber, 
   @Query("SELECT us FROM UserSubscriber us JOIN FETCH us.interest")
   List<UserSubscriber> findAllWithInterest();
 
+  @Modifying
+  @Query("DELETE FROM UserSubscriber us WHERE us.user.id = :userId AND us.interest.id = :interestId")
+  int deleteByUserIdAndInterestId(@Param("userId") UUID userId,
+      @Param("interestId") UUID interestId);
 }

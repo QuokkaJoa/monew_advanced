@@ -16,11 +16,12 @@ import org.mapstruct.Named;
 public interface SubscriptionMapper {
 
   @Mapping(source = "subscription.id", target = "id")
+  @Mapping(source = "subscription.createdAt", target = "createdAt")
+
   @Mapping(source = "interest.id", target = "interestId")
   @Mapping(source = "interest.name", target = "interestName")
   @Mapping(source = "interest.interestKeywords", target = "interestKeywords", qualifiedByName = "mapKeywordsToStringList")
   @Mapping(source = "interest.subscriberCount", target = "interestSubscriberCount")
-  @Mapping(source = "subscription.createdAt", target = "createdAt")
   SubscriptionResponse toSubscriptionResponse(UserSubscriber subscription, Interest interest);
 
   @Named("mapKeywordsToStringList")
