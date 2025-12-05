@@ -15,7 +15,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -34,8 +33,8 @@ public class InterestRepositoryCustomImpl implements InterestRepositoryCustom {
   private static final QInterestKeyword interestKeyword = QInterestKeyword.interestKeyword;
   private static final QUserSubscriber userSubscriber = QUserSubscriber.userSubscriber;
 
-  public InterestRepositoryCustomImpl(EntityManager em, InterestMapper interestMapper) {
-    this.queryFactory = new JPAQueryFactory(em);
+  public InterestRepositoryCustomImpl(JPAQueryFactory queryFactory, InterestMapper interestMapper) {
+    this.queryFactory = queryFactory;
     this.interestMapper = interestMapper;
   }
 

@@ -1,7 +1,10 @@
 package com.part2.monew.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,6 +20,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "interests")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Interest {
 
     @Id

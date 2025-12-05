@@ -4,26 +4,19 @@ import com.part2.monew.dto.request.InterestRegisterRequestDto;
 import com.part2.monew.dto.request.InterestUpdateRequestDto;
 import com.part2.monew.dto.response.CursorPageResponse;
 import com.part2.monew.dto.response.InterestDto;
-import com.part2.monew.dto.response.SubscriptionResponse;
 import com.part2.monew.entity.Interest;
 import com.part2.monew.entity.InterestKeyword;
 import com.part2.monew.entity.Keyword;
-import com.part2.monew.entity.User;
-import com.part2.monew.entity.UserSubscriber;
 import com.part2.monew.global.exception.BusinessException;
 import com.part2.monew.global.exception.ErrorCode;
 import com.part2.monew.global.exception.interest.SimilarInterestExistsException;
 import com.part2.monew.mapper.InterestMapper;
-import com.part2.monew.mapper.SubscriptionMapper;
 import com.part2.monew.repository.InterestRepository;
 import com.part2.monew.repository.KeywordRepository;
-import com.part2.monew.repository.UserRepository;
-import com.part2.monew.repository.UserSubscriberRepository;
 import com.part2.monew.service.InterestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,9 +32,6 @@ public class InterestServiceImpl implements InterestService {
   private final KeywordRepository keywordRepository;
   private final InterestMapper interestMapper;
   private final JaroWinklerSimilarity jaroWinklerSimilarity = new JaroWinklerSimilarity();
-  private final UserRepository userRepository;
-  private final UserSubscriberRepository userSubscriberRepository;
-  private final SubscriptionMapper subscriptionMapper;
 
   @Transactional
   @Override
@@ -168,42 +158,5 @@ public class InterestServiceImpl implements InterestService {
     interestRepository.delete(interestToDelete);
 
     log.info("관심사 삭제 완료 - ID: {}", interestId);
-  }
-
-  @Transactional
-  @Override
-  public SubscriptionResponse subscribeToInterest(UUID interestId, UUID requestUserId) {
-    User userRef = userRepository.getReferenceById(requestUserId);
-    Interest interest = interestRepository.findById(interestId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.INTEREST_NOT_FOUND));
-
-    UserSubscriber newSubscription = UserSubscriber.builder()
-        .user(userRef)
-        .interest(interest)
-        .build();
-
-    try {
-      userSubscriberRepository.save(newSubscription);
-    } catch (DataIntegrityViolationException e) {
-      throw new BusinessException(ErrorCode.ALREADY_SUBSCRIBED_INTEREST);
-    }
-    interestRepository.incrementSubscriberCount(interestId);
-
-    interest.setSubscriberCount(interest.getSubscriberCount() + 1);
-
-    return subscriptionMapper.toSubscriptionResponse(newSubscription, interest);
-  }
-
-  @Transactional
-  @Override
-  public void unsubscribeFromInterest(UUID interestId, UUID requestUserId) {
-    int deletedCount = userSubscriberRepository.deleteByUserIdAndInterestId(requestUserId,
-        interestId);
-
-    if (deletedCount > 0) {
-      interestRepository.decrementSubscriberCount(interestId);
-    } else {
-      log.info("구독 정보 없음 (이미 취소됨): User(ID:{}), Interest(ID:{})", requestUserId, interestId);
-    }
   }
 }

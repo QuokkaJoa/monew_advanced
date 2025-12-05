@@ -7,6 +7,7 @@ import com.part2.monew.dto.response.CursorPageResponse;
 import com.part2.monew.dto.response.InterestDto;
 import com.part2.monew.dto.response.SubscriptionResponse;
 import com.part2.monew.service.InterestService;
+import com.part2.monew.service.impl.SubscriptionServiceImpl;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InterestController {
 
   private final InterestService interestService;
+  private final SubscriptionServiceImpl subscriptionService;
 
   @PostMapping
   public ResponseEntity<InterestDto> registerInterest(@Valid @RequestBody
@@ -66,7 +68,7 @@ public class InterestController {
   @PostMapping("/{interestId}/subscriptions")
   public ResponseEntity<SubscriptionResponse> subscribeToInterest(@PathVariable UUID interestId,
       @RequestHeader(value = "Monew-Request-User-Id", required = false) UUID requestUserId) {
-    SubscriptionResponse subscriptionResponse = interestService.subscribeToInterest(interestId,
+    SubscriptionResponse subscriptionResponse = subscriptionService.subscribeToInterest(interestId,
         requestUserId);
     return ResponseEntity.ok(subscriptionResponse);
   }
@@ -83,7 +85,7 @@ public class InterestController {
       @PathVariable UUID interestId,
       @RequestHeader(value = "Monew-Request-User-Id", required = false) UUID requestUserId
   ) {
-    interestService.unsubscribeFromInterest(interestId, requestUserId);
+    subscriptionService.unsubscribeFromInterest(interestId, requestUserId);
     return ResponseEntity.noContent().build();
   }
 }
