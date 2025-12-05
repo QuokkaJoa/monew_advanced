@@ -1,0 +1,81 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  # [1] DB 설정: H2를 PostgreSQL 모드로 실행 (호환성 확보)
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ''
+
+  # [2] 초기화 방지
+  sql:
+    init:
+      mode: never
+  flyway:
+    enabled: false
+  batch:
+    job:
+      enabled: false
+
+  # [3] JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+    defer-datasource-initialization: false
+    open-in-view: false
+
+  # [4] Redis 오류 방지 (가짜 연결 정보)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 50ms
+
+  # [5] AWS 자동 설정 끄기 (의존성이 남아있을 경우 대비)
+  cloud:
+    aws:
+      stack:
+        auto: false
+      region:
+        static: ap-northeast-2
+
+# =========================================================
+# [핵심] Main application.yml의 구멍난 변수들 메우기
+# =========================================================
+monew:
+  storage:
+    type: local # 테스트할 땐 로컬 스토리지 모드로 동작하게 설정
+    s3:
+      # 실제 값은 필요 없지만, 변수 해석 에러를 막기 위해 가짜 값 입력
+      accessKeyId: test-access-key
+      secretAccessKey: test-secret-key
+      region: ap-northeast-2
+      bucket: test-bucket
+
+  cloud:
+    slack:
+      webhook-url: https://test-webhook-url # 가짜 웹훅 URL
+
+  # 네이버 API 등 외부 설정도 가짜 값으로 고정 (환경변수 의존 제거)
+  news-providers:
+    providers:
+      naver-api:
+        client-id: test-client-id
+        client-secret: test-client-secret
+logging:
+  level:
+    root: INFO
+    # DEBUG 로그가 상속되는 것을 막기 위해 명시적으로 OFF 설정
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+    org.springframework.transaction: OFF
+    # 혹시 모를 잡다한 로그들 차단
+    com.zaxxer.hikari: OFF

@@ -31,4 +31,12 @@ public interface UserSubscriberRepository extends JpaRepository<UserSubscriber, 
   @Query("DELETE FROM UserSubscriber us WHERE us.user.id = :userId AND us.interest.id = :interestId")
   int deleteByUserIdAndInterestId(@Param("userId") UUID userId,
       @Param("interestId") UUID interestId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("UPDATE Interest i SET i.subscriberCount = i.subscriberCount + 1 WHERE i.id = :id")
+  void incrementSubscriberCount(@Param("id") UUID interestId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("UPDATE Interest i SET i.subscriberCount = i.subscriberCount -1 WHERE i.id = :id AND i.subscriberCount > 0")
+  void decrementSubscriberCount(@Param("id") UUID interestId);
 }

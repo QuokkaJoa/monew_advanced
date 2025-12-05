@@ -7,8 +7,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
+@Profile("!test")
 public class DataSourceConfiguration {
     public static final String MAIN_DATA_SOURCE = "MAIN_DATA_SOURCE";
     public static final String STANDBY_DATA_SOURCE = "STANDBY_DATA_SOURCE";
