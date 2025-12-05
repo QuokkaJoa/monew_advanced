@@ -38,6 +38,4 @@ out/
 
 .logs
 .env
-Q*.java
-
 /src/main/generated/
