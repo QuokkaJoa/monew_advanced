@@ -8,11 +8,15 @@ import com.part2.monew.global.exception.BusinessException;
 import com.part2.monew.global.exception.ErrorCode;
 import com.part2.monew.global.exception.ErrorResponse;
 import com.part2.monew.global.exception.interest.SimilarInterestExistsException;
+import com.part2.monew.service.impl.SubscriptionServiceImpl;
 import com.part2.monew.support.ControllerTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Arrays;
@@ -28,7 +32,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(InterestController.class)
+@ActiveProfiles("test")
 class InterestControllerTest extends ControllerTestSupport {
+
+  @MockitoBean
+  private SubscriptionServiceImpl subscriptionServiceImpl;
 
   private final String BASE_URL = "/api/interests";
   private UUID requestUserId;

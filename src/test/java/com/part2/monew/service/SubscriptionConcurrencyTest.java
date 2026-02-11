@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
-@ActiveProfiles("test") // 위에서 만든 application-test.yml을 읽습니다.
+@ActiveProfiles("test")
 public class SubscriptionConcurrencyTest {
 
   @Autowired
@@ -31,14 +31,8 @@ public class SubscriptionConcurrencyTest {
   @Autowired
   private UserRepository userRepository;
 
-  // 뉴스 기사 리포지토리는 이 테스트와 무관하므로 Mocking
   @MockitoBean
   private com.part2.monew.repository.NewsArticleRepository newsArticleRepository;
-
-  // [중요] 만약 S3Uploader 같은 Bean이 앱 실행 시 S3 연결을 시도한다면
-  // 아래처럼 MockBean 처리를 해줘야 합니다. (연결 시도 차단)
-  // @MockBean
-  // private com.part2.monew.common.S3Uploader s3Uploader;
 
   @Test
   @DisplayName("동시에 100명이 구독 요청을 보내면 구독자 수가 정확히 100명 증가해야 한다.")

@@ -4,16 +4,20 @@ import com.part2.monew.dto.response.*;
 import com.part2.monew.global.exception.ErrorCode;
 import com.part2.monew.global.exception.ErrorResponse;
 import com.part2.monew.global.exception.user.UserNotFoundException;
+import com.part2.monew.service.impl.SubscriptionServiceImpl;
 import com.part2.monew.support.ControllerTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -21,7 +25,13 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(UserActivityController.class)
+@ActiveProfiles("test")
 class UserActivityControllerTest extends ControllerTestSupport {
+
+  @MockitoBean
+  private SubscriptionServiceImpl subscriptionServiceImpl;
+  
   private UUID userId;
 
   @BeforeEach

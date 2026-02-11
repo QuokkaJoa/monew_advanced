@@ -54,7 +54,7 @@ class InterestServiceImplTest {
   private InterestMapper interestMapper;
 
   @InjectMocks
-  private InterestServiceImpl interestService; // 사용자님이 사용하신 실제 서비스 구현 클래스명
+  private InterestServiceImpl interestService;
 
   private UUID requestUserId;
 

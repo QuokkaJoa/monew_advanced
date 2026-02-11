@@ -1,6 +1,7 @@
 package com.part2.monew.integration;
 
 
+import com.part2.monew.global.aop.DistributedCacheAspect;
 import com.part2.monew.support.IntegrationTestSupport;
 import com.part2.monew.dto.request.UserCreateRequest;
 import com.part2.monew.dto.request.UserLoginRequest;
@@ -8,15 +9,27 @@ import com.part2.monew.dto.request.UserUpdateRequest;
 import com.part2.monew.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 
 import java.util.UUID;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@SpringBootTest
+@ActiveProfiles("test")
 public class UserIntegrationTest extends IntegrationTestSupport {
+
+    @MockitoBean
+    private RedissonClient redissonClient;
+
+    @MockitoBean
+    private DistributedCacheAspect distributedCacheAspect;
 
     private UserCreateRequest createReq;
     private UserUpdateRequest updateReq;

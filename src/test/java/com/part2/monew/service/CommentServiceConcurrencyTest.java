@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.part2.monew.config.RedisTestContainerConfig;
 import com.part2.monew.dto.request.CommentRequest;
 import com.part2.monew.repository.CommentRepository;
 import java.util.Collections;
@@ -20,11 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
-public class CommentServiceConcurrencyTest {
-
+@ActiveProfiles("test")
+public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
 
   private static final Logger log = LoggerFactory.getLogger(CommentServiceConcurrencyTest.class);
 

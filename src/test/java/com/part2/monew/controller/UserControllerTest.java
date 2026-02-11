@@ -8,11 +8,13 @@ import com.part2.monew.entity.User;
 import com.part2.monew.support.ControllerTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -20,6 +22,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(UserController.class)
+@ActiveProfiles("test")
 class UserControllerTest extends ControllerTestSupport {
     private UserCreateRequest createReq;
     private UserLoginRequest loginReq;

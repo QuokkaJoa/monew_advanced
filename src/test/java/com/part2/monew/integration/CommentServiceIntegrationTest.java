@@ -1,26 +1,48 @@
 package com.part2.monew.integration;
 
+import com.part2.monew.global.aop.DistributedCacheAspect;
 import com.part2.monew.support.IntegrationTestSupport;
 import com.part2.monew.dto.request.CommentRequest;
 import com.part2.monew.dto.response.CursorResponse;
 import com.part2.monew.entity.CommentsManagement;
 import com.part2.monew.entity.NewsArticle;
 import com.part2.monew.entity.User;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import org.redisson.api.RedissonClient;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 
+@SpringBootTest(properties = {"spring.cache.type=none"})
+@ActiveProfiles("test")
 class CommentServiceIntegrationTest extends IntegrationTestSupport{
+
+    @MockitoBean
+    RedissonClient redissonClient;
+
+    @MockitoBean
+    private DistributedCacheAspect distributedCacheAspect;
 
     @Test
     @DisplayName("댓글 목록을 커서 기반으로 조회한다")
-    void testFindCommentsByArticleIdWithoutForLoop() {
+    void testFindCommentsByArticleIdWithoutForLoop() throws Throwable {
         // given
+        given(distributedCacheAspect.handleCache(any(), any()))
+            .willAnswer(invocation -> {
+                ProceedingJoinPoint joinPoint = invocation.getArgument(0);
+                return joinPoint.proceed();
+            });
+
         User user = new User("test@example.com", "pw", "nickname", true, Timestamp.from(Instant.now()));
         em.persist(user);
 
