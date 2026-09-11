@@ -104,4 +104,22 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
             .fetch();
     }
 
+    @Override
+    public List<CommentsManagement> findCommentsPage(UUID articleId, Timestamp after, int limit) {
+        return queryFactory
+            .selectFrom(commentsManagement)
+            .join(commentsManagement.user, user).fetchJoin()
+            .join(commentsManagement.newsArticle, newsArticle).fetchJoin()
+            .where(
+                commentsManagement.newsArticle.id.eq(articleId),
+                commentsManagement.active.isTrue(),
+                ltCreatedAt(after)
+            )
+            .orderBy(
+                commentsManagement.createdAt.desc(),
+                commentsManagement.id.desc()
+            )
+            .limit(limit + 1)
+            .fetch();
+    }
 }

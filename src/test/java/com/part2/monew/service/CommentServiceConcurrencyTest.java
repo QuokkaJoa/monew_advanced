@@ -56,11 +56,10 @@ public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
         .after(null)
         .build();
 
-    given(commentRepository.findCommentsByArticleId(
+    given(commentRepository.findCommentsPage(
         eq(articleId),
         eq(null),
-        eq(limit),
-        eq(userId)
+        eq(limit)
     )).willAnswer(invocation -> {
       // 이 람다식은 Repository가 호출될 때 실행됩니다.
       log.info(" Repository 접근 (DB에 Connect)");
@@ -96,11 +95,10 @@ public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
     assertThat(errorCount.get()).as("테스트 실행 중 예외가 발생했습니다.").isEqualTo(0);
 
     // 2. 분산 락이 제대로 작동했다면, DB 조회는 단 1번이어야 함.
-    verify(commentRepository, times(1)).findCommentsByArticleId(
+    verify(commentRepository, times(1)).findCommentsPage(
         eq(articleId),
         eq(null),
-        eq(limit),
-        eq(userId)
+        eq(limit)
     );
   }
 }

@@ -1,6 +1,7 @@
 package com.part2.monew.dto.response;
 
 
+import com.part2.monew.dto.cache.CachedComment;
 import com.part2.monew.entity.CommentsManagement;
 import lombok.Builder;
 import lombok.Getter;
@@ -44,6 +45,19 @@ public class CommentResponse {
                 .likedByMe(comment.getCommentLikes() == null ? false : comment.getCommentLikes().size() > 0 ? true : false )
                 .createdAt(comment.getCreatedAt())
                 .build();
+    }
+
+    public static CommentResponse of(CachedComment c, boolean likedByMe) {
+        return CommentResponse.builder()
+            .id(c.id())
+            .articleId(c.articleId())
+            .userId(c.userId())
+            .userNickname(c.userNickname())
+            .content(c.content())
+            .likeCount(c.likeCount())
+            .likedByMe(likedByMe)
+            .createdAt(c.createdAt())
+            .build();
     }
 
 }

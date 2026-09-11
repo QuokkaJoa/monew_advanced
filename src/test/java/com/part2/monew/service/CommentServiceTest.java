@@ -43,12 +43,13 @@ public class CommentServiceTest {
         .build();
 
     // Mocking 1: 댓글 목록 조회 (빈 리스트 반환)
-    given(commentRepository.findCommentsByArticleId(
-        eq(articleId),
-        eq(null), // req.after()가 null이므로
-        eq(limit),
-        eq(userId)
-    )).willReturn(Collections.emptyList());
+    given(
+        commentRepository.findCommentsPage(
+            eq(articleId),
+            eq(null),
+            eq(limit)
+        )
+    ).willReturn(Collections.emptyList());
 
     // Mocking 2: 전체 카운트 조회 (0 반환)
     given(commentRepository.totalCount(eq(articleId)))
@@ -65,12 +66,11 @@ public class CommentServiceTest {
     commentService.findCommentsByArticleId(request, userId);
 
     // then
-    // findCommentsByArticleId 메서드가 정확히 '1번'만 호출되었는지 검증
-    verify(commentRepository, times(1)).findCommentsByArticleId(
+    // findCommentsPage 메서드가 정확히 '1번'만 호출되었는지 검증
+    verify(commentRepository, times(1)).findCommentsPage(
         eq(articleId),
         eq(null),
-        eq(limit),
-        eq(userId)
+        eq(limit)
     );
 
     // totalCount도 캐싱 범위 안에 포함되어 있다면 1번, 아니라면 3번 호출될 수 있음.
