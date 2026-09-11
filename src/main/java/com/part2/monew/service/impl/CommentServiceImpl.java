@@ -1,5 +1,7 @@
 package com.part2.monew.service.impl;
 
+import com.part2.monew.dto.cache.CachedComment;
+import com.part2.monew.dto.cache.CachedCommentPage;
 import com.part2.monew.dto.request.CommentRequest;
 import com.part2.monew.dto.request.CreateCommentRequest;
 import com.part2.monew.dto.response.CommentLikeResponse;
@@ -9,7 +11,6 @@ import com.part2.monew.entity.CommentLike;
 import com.part2.monew.entity.CommentsManagement;
 import com.part2.monew.entity.NewsArticle;
 import com.part2.monew.entity.User;
-import com.part2.monew.global.annotation.DistributedCache;
 import com.part2.monew.global.exception.article.ArticleNotFoundException;
 import com.part2.monew.global.exception.comment.CommentIsActiveException;
 import com.part2.monew.global.exception.comment.CommentLikeDuplication;
@@ -22,7 +23,10 @@ import com.part2.monew.repository.NewsArticleRepository;
 import com.part2.monew.repository.UserRepository;
 import com.part2.monew.service.CommentService;
 import com.part2.monew.service.NotificationService;
+import com.part2.monew.service.cache.CommentCacheStore;
 import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,7 +36,6 @@ import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,28 +49,15 @@ public class CommentServiceImpl implements CommentService {
     private final NewsArticleRepository articleRepository;
     private final NotificationService notificationService;
     private final DataSource dataSource;
+    private final CommentCacheStore cacheStore;
 
     @Override
-    @DistributedCache(
-        cacheName = "comments",
-        key = "#req.articleId + ':' + #req.limit"
-    )
     public CursorResponse findCommentsByArticleId(CommentRequest req, UUID userId) {
-        List<CommentsManagement> list = commentRepository.findCommentsByArticleId(
-            req.articleId(),
-            req.after(),
-            req.limit(),
-            userId
-        );
+        CachedCommentPage page = cacheStore.isCacheable(req)
+            ? cacheStore.getFirstPage(req.articleId())
+            : cacheStore.loadPage(req.articleId(), req.after(), CommentCacheStore.limitOf(req));
 
-        Long total = commentRepository.totalCount(req.articleId());
-
-        return CursorResponse.of(
-            list.stream()
-                .map(CommentResponse::of)
-                .collect(Collectors.toList()),
-            total
-        );
+        return assemble(page, userId);
     }
 
     @Override
@@ -215,5 +205,21 @@ public class CommentServiceImpl implements CommentService {
         } catch (Exception e) {
             log.error("Failed to check DB URL", e);
         }
+    }
+
+    private CursorResponse assemble(CachedCommentPage page, UUID userId) {
+        List<UUID> commentIds = page.comments().stream()
+            .map(CachedComment::id)
+            .toList();
+
+        Set<UUID> likedIds = commentIds.isEmpty()
+            ? Set.of()
+            : new HashSet<>(commentLikeRepository.findLikedCommentIds(userId, commentIds));
+
+        List<CommentResponse> content = page.comments().stream()
+            .map(c -> CommentResponse.of(c, likedIds.contains(c.id())))
+            .toList();
+
+        return CursorResponse.of(content, page.totalElements());
     }
 }
