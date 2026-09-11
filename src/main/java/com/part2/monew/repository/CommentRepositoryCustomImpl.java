@@ -77,12 +77,15 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
 
     @Override
     public Long totalCount(UUID articleId) {
-        return queryFactory
-                .selectFrom(commentsManagement)
-                .where(
-                        commentsManagement.newsArticle.id.eq(articleId),
-                        commentsManagement.active.isTrue()
-                ).fetchCount();
+        Long count = queryFactory
+            .select(commentsManagement.count())
+            .from(commentsManagement)
+            .where(
+                commentsManagement.newsArticle.id.eq(articleId),
+                commentsManagement.active.isTrue()
+            ).fetchOne();
+
+        return count == null ? 0L : count;
     }
 
     private BooleanExpression ltCreatedAt(Timestamp after) {
