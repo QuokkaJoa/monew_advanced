@@ -27,9 +27,9 @@ public class CursorResponse {
         this.hasNext = hasNext;
     }
 
-    public static CursorResponse of(List<CommentResponse> comments, Long totalElements) {
-        boolean hasNext = hasNext(comments);
-        List<CommentResponse> content = hasNext ? comments.subList(0, 5) : comments;
+    public static CursorResponse of(List<CommentResponse> comments, Long totalElements, int limit) {
+        boolean hasNext = comments.size() > limit;
+        List<CommentResponse> content = hasNext ? comments.subList(0, limit) : comments;
 
         return CursorResponse.builder()
                 .content(content)
@@ -37,12 +37,8 @@ public class CursorResponse {
                 .nextAfter(getNextCursor(content))
                 .size(content.size())
                 .totalElements(totalElements)
-                .hasNext(hasNext(comments))
+                .hasNext(hasNext)
                 .build();
-    }
-
-    private static boolean hasNext(List<CommentResponse> comments) {
-        return comments.size() > 5;
     }
 
     private static String getNextCursor(List<CommentResponse> content) {

@@ -50,6 +50,23 @@ class CommentControllerTest extends ControllerTestSupport {
     }
 
 
+    @DisplayName("limit이 허용 범위를 벗어나면 400을 반환한다.")
+    @Test
+    void rejectsOutOfRangeLimit() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        // when // then
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/comments")
+                        .param("articleId", UUID.randomUUID().toString())
+                        .param("orderBy", "createdAt")
+                        .param("direction", "DESC")
+                        .param("limit", "0")
+                        .header("Monew-Request-User-ID", userId))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
+
+
     @DisplayName("댓글을 생성한다.")
     @Test
     void createComment() throws Exception {

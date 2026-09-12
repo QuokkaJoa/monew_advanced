@@ -53,11 +53,13 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CursorResponse findCommentsByArticleId(CommentRequest req, UUID userId) {
+        int limit = CommentCacheStore.limitOf(req);
+
         CachedCommentPage page = cacheStore.isCacheable(req)
             ? cacheStore.getFirstPage(req.articleId())
-            : cacheStore.loadPage(req.articleId(), req.after(), CommentCacheStore.limitOf(req));
+            : cacheStore.loadPage(req.articleId(), req.after(), limit);
 
-        return assemble(page, userId);
+        return assemble(page, userId, limit);
     }
 
     @Override
@@ -207,7 +209,7 @@ public class CommentServiceImpl implements CommentService {
         }
     }
 
-    private CursorResponse assemble(CachedCommentPage page, UUID userId) {
+    private CursorResponse assemble(CachedCommentPage page, UUID userId, int limit) {
         List<UUID> commentIds = page.comments().stream()
             .map(CachedComment::id)
             .toList();
@@ -220,6 +222,6 @@ public class CommentServiceImpl implements CommentService {
             .map(c -> CommentResponse.of(c, likedIds.contains(c.id())))
             .toList();
 
-        return CursorResponse.of(content, page.totalElements());
+        return CursorResponse.of(content, page.totalElements(), limit);
     }
 }
