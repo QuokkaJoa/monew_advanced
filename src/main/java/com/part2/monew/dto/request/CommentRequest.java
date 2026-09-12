@@ -1,5 +1,7 @@
 package com.part2.monew.dto.request;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Builder;
 
 import java.sql.Timestamp;
@@ -9,7 +11,7 @@ public record CommentRequest(
     UUID articleId,
     String orderBy,
     String direction,
-    Integer limit,
+    @Min(1) @Max(100) Integer limit,
     String cursor,
     Timestamp after,
     UUID requestUserId
