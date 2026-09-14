@@ -57,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
 
         CachedCommentPage page = cacheStore.isCacheable(req)
             ? cacheStore.getFirstPage(req.articleId())
-            : cacheStore.loadPage(req.articleId(), req.after(), limit);
+            : cacheStore.loadPage(req.articleId(), req.after(), req.cursor(), limit);
 
         return assemble(page, userId, limit);
     }

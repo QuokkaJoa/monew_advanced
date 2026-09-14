@@ -47,6 +47,7 @@ public class CommentServiceTest {
         commentRepository.findCommentsPage(
             eq(articleId),
             eq(null),
+            eq(null),
             eq(limit)
         )
     ).willReturn(Collections.emptyList());
@@ -69,6 +70,7 @@ public class CommentServiceTest {
     // findCommentsPage 메서드가 정확히 '1번'만 호출되었는지 검증
     verify(commentRepository, times(1)).findCommentsPage(
         eq(articleId),
+        eq(null),
         eq(null),
         eq(limit)
     );

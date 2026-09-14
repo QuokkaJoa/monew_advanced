@@ -36,12 +36,12 @@ public class CommentCacheStore {
 
   @DistributedCache(cacheName = CACHE_NAME, key = "'comments:first:' + #articleId")
   public CachedCommentPage getFirstPage(UUID articleId) {
-    return loadPage(articleId, null, DEFAULT_LIMIT);
+    return loadPage(articleId, null, null, DEFAULT_LIMIT);
   }
 
-  public CachedCommentPage loadPage(UUID articleId, Timestamp after, int limit) {
+  public CachedCommentPage loadPage(UUID articleId, Timestamp after, UUID cursorId, int limit) {
     List<CachedComment> comments = commentRepository
-        .findCommentsPage(articleId, after, limit)
+        .findCommentsPage(articleId, after, cursorId, limit)
         .stream()
         .map(CachedComment::from)
         .toList();

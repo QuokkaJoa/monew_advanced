@@ -12,7 +12,7 @@ public record CommentRequest(
     String orderBy,
     String direction,
     @Min(1) @Max(100) Integer limit,
-    String cursor,
+    UUID cursor,
     Timestamp after,
     UUID requestUserId
 ) {

@@ -1,21 +1,20 @@
 package com.part2.monew.repository;
 
+import static com.part2.monew.entity.QCommentLike.commentLike;
+import static com.part2.monew.entity.QCommentsManagement.commentsManagement;
+import static com.part2.monew.entity.QNewsArticle.newsArticle;
+import static com.part2.monew.entity.QUser.user;
+
 import com.part2.monew.entity.CommentLike;
 import com.part2.monew.entity.CommentsManagement;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import static com.part2.monew.entity.QCommentLike.commentLike;
-import static com.part2.monew.entity.QCommentsManagement.commentsManagement;
-import static com.part2.monew.entity.QNewsArticle.newsArticle;
-import static com.part2.monew.entity.QUser.user;
 
 public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
     private final JPAQueryFactory queryFactory;
@@ -108,7 +107,7 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
     }
 
     @Override
-    public List<CommentsManagement> findCommentsPage(UUID articleId, Timestamp after, int limit) {
+    public List<CommentsManagement> findCommentsPage(UUID articleId, Timestamp after, UUID cursorId, int limit) {
         return queryFactory
             .selectFrom(commentsManagement)
             .join(commentsManagement.user, user).fetchJoin()
@@ -116,7 +115,7 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
             .where(
                 commentsManagement.newsArticle.id.eq(articleId),
                 commentsManagement.active.isTrue(),
-                ltCreatedAt(after)
+                cursorCondition(after, cursorId)
             )
             .orderBy(
                 commentsManagement.createdAt.desc(),
@@ -124,5 +123,18 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
             )
             .limit(limit + 1)
             .fetch();
+    }
+
+    private BooleanExpression cursorCondition(Timestamp after, UUID cursorId) {
+        if (after == null) {
+            return null;
+        }
+        if (cursorId == null) {
+            return commentsManagement.createdAt.lt(after);
+        }
+
+        return commentsManagement.createdAt.lt(after)
+            .or(commentsManagement.createdAt.eq(after)
+                .and(commentsManagement.id.lt(cursorId)));
     }
 }
