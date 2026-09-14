@@ -59,6 +59,7 @@ public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
     given(commentRepository.findCommentsPage(
         eq(articleId),
         eq(null),
+        eq(null),
         eq(limit)
     )).willAnswer(invocation -> {
       // 이 람다식은 Repository가 호출될 때 실행됩니다.
@@ -97,6 +98,7 @@ public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
     // 2. 분산 락이 제대로 작동했다면, DB 조회는 단 1번이어야 함.
     verify(commentRepository, times(1)).findCommentsPage(
         eq(articleId),
+        eq(null),
         eq(null),
         eq(limit)
     );

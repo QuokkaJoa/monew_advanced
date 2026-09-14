@@ -11,5 +11,5 @@ public interface CommentRepositoryCustom {
     Long totalCount(UUID articleId);
     List<CommentsManagement> findTop10RecentCommentsByUserId(UUID userId);
 
-    List<CommentsManagement> findCommentsPage(UUID articleId, Timestamp after, int limit);
+    List<CommentsManagement> findCommentsPage(UUID articleId, Timestamp after, UUID cursorId, int limit);
 }

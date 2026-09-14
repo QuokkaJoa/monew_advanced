@@ -58,7 +58,7 @@ public class CommentPaginationTest extends RedisTestContainerConfig {
 
     List<CommentsManagement> eleven = comments(articleId, 11);
 
-    given(commentRepository.findCommentsPage(articleId, null, 10)).willReturn(eleven);
+    given(commentRepository.findCommentsPage(articleId, null, null, 10)).willReturn(eleven);
     given(commentRepository.totalCount(articleId)).willReturn(12L);
     given(commentLikeRepository.findLikedCommentIds(eq(userId), anyList()))
         .willReturn(List.of());
@@ -77,6 +77,10 @@ public class CommentPaginationTest extends RedisTestContainerConfig {
     assertThat(response.getSize()).isEqualTo(10);
     assertThat(response.getHasNext()).isTrue();
     assertThat(response.getTotalElements()).isEqualTo(12L);
+
+    CommentsManagement lastOnPage = eleven.get(9);
+    assertThat(response.getNextCursor()).isEqualTo(lastOnPage.getId().toString());
+    assertThat(response.getNextAfter()).isEqualTo(lastOnPage.getCreatedAt().toString());
   }
 
   private List<CommentsManagement> comments(UUID articleId, int count) {

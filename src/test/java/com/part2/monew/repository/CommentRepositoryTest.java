@@ -1,10 +1,18 @@
 package com.part2.monew.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.part2.monew.config.QueryDslConfig;
 import com.part2.monew.entity.CommentsManagement;
 import com.part2.monew.entity.NewsArticle;
 import com.part2.monew.entity.User;
 import com.part2.monew.mapper.InterestMapper;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +22,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import(QueryDslConfig.class)
@@ -91,6 +92,68 @@ class CommentRepositoryTest {
                 .hasSize(6)
                 .extracting(CommentsManagement::getContent)
                 .containsExactly("Content10", "Content9", "Content8", "Content7", "Content6", "Content5");
+    }
+
+    @DisplayName("같은 시각 댓글이 페이지 경계에 걸려도 두 페이지를 합치면 모든 댓글이 한 번씩 나온다.")
+    @Transactional
+    @Test
+    void findCommentsPage_sameCreatedAtOnPageBoundary() {
+        // given: 같은 기사에 댓글 4개, B와 C는 같은 시각
+        User user = User.builder()
+            .nickname("jh")
+            .email("jh@example.com")
+            .password("123456")
+            .active(true).build();
+        em.persist(user);
+
+        NewsArticle article = new NewsArticle("https://example.com/jh", "제목",
+            Timestamp.from(Instant.now()), "요약", 0L);
+        em.persist(article);
+
+        CommentsManagement a = CommentsManagement.create(user, article, "A", 0);
+        CommentsManagement b = CommentsManagement.create(user, article, "B", 0);
+        CommentsManagement c = CommentsManagement.create(user, article, "C", 0);
+        CommentsManagement d = CommentsManagement.create(user, article, "D", 0);
+        em.persist(a);
+        em.persist(b);
+        em.persist(c);
+        em.persist(d);
+        em.flush();
+
+        setCreatedAt(a, "2026-01-01T18:40:00Z");
+        setCreatedAt(b, "2026-01-01T18:30:00Z");
+        setCreatedAt(c, "2026-01-01T18:30:00Z");
+        setCreatedAt(d, "2026-01-01T18:20:00Z");
+        em.clear();
+
+        int limit = 2;
+
+        List<CommentsManagement> firstFetch = commentRepository.findCommentsPage(article.getId(),
+            null, null, limit);
+        List<CommentsManagement> page1 = firstFetch.subList(0, Math.min(limit, firstFetch.size()));
+
+        Timestamp nextAfter = page1.get(page1.size() - 1).getCreatedAt();
+        UUID nextCursorId = page1.get(page1.size() - 1).getId();
+
+        List<CommentsManagement> secondFetch = commentRepository.findCommentsPage(article.getId(),
+            nextAfter, nextCursorId, limit);
+        List<CommentsManagement> page2 = secondFetch.subList(0,
+            Math.min(limit, secondFetch.size()));
+
+        List<String> allContents = new ArrayList<>();
+
+        page1.forEach(cm -> allContents.add(cm.getContent()));
+        page2.forEach(cm -> allContents.add(cm.getContent()));
+
+        assertThat(allContents).containsExactlyInAnyOrder("A", "B", "C", "D");
+    }
+
+    private void setCreatedAt(CommentsManagement comment, String isoTime) {
+        em.getEntityManager()
+                .createQuery("update CommentsManagement cm set cm.createdAt = :createdAt where cm.id = :id")
+                .setParameter("createdAt", Timestamp.from(Instant.parse(isoTime)))
+                .setParameter("id", comment.getId())
+                .executeUpdate();
     }
 
     @DisplayName("댓글을 저장한다.")

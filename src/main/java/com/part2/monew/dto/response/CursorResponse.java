@@ -33,15 +33,19 @@ public class CursorResponse {
 
         return CursorResponse.builder()
                 .content(content)
-                .nextCursor(getNextCursor(content))
-                .nextAfter(getNextCursor(content))
+                .nextCursor(lastId(content))
+                .nextAfter(lastCreatedAt(content))
                 .size(content.size())
                 .totalElements(totalElements)
                 .hasNext(hasNext)
                 .build();
     }
 
-    private static String getNextCursor(List<CommentResponse> content) {
+    private static String lastId(List<CommentResponse> content) {
+        return content.isEmpty() ? null : content.get(content.size() - 1).getId().toString();
+    }
+
+    private static String lastCreatedAt(List<CommentResponse> content) {
         return content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt().toString();
     }
 
