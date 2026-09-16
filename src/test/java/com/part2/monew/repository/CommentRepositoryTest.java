@@ -98,7 +98,6 @@ class CommentRepositoryTest {
     @Transactional
     @Test
     void findCommentsPage_sameCreatedAtOnPageBoundary() {
-        // given: 같은 기사에 댓글 4개, B와 C는 같은 시각
         User user = User.builder()
             .nickname("jh")
             .email("jh@example.com")
@@ -129,14 +128,14 @@ class CommentRepositoryTest {
         int limit = 2;
 
         List<CommentsManagement> firstFetch = commentRepository.findCommentsPage(article.getId(),
-            null, null, limit);
+            null, null, "DESC", limit);
         List<CommentsManagement> page1 = firstFetch.subList(0, Math.min(limit, firstFetch.size()));
 
         Timestamp nextAfter = page1.get(page1.size() - 1).getCreatedAt();
         UUID nextCursorId = page1.get(page1.size() - 1).getId();
 
         List<CommentsManagement> secondFetch = commentRepository.findCommentsPage(article.getId(),
-            nextAfter, nextCursorId, limit);
+            nextAfter, nextCursorId, "DESC", limit);
         List<CommentsManagement> page2 = secondFetch.subList(0,
             Math.min(limit, secondFetch.size()));
 
@@ -146,6 +145,45 @@ class CommentRepositoryTest {
         page2.forEach(cm -> allContents.add(cm.getContent()));
 
         assertThat(allContents).containsExactlyInAnyOrder("A", "B", "C", "D");
+    }
+
+    @DisplayName("ASC로 요청하면 작성 시각이 빠른 댓글부터 조회한다.")
+    @Transactional
+    @Test
+    void findCommentsPage_ascendingDirection() {
+        User user = User.builder()
+            .nickname("jh")
+            .email("jh@example.com")
+            .password("123456")
+            .active(true).build();
+        em.persist(user);
+
+        NewsArticle article = new NewsArticle("https://example.com/jh", "제목",
+            Timestamp.from(Instant.now()), "요약", 0L);
+        em.persist(article);
+
+        CommentsManagement a = CommentsManagement.create(user, article, "A", 0);
+        CommentsManagement b = CommentsManagement.create(user, article, "B", 0);
+        CommentsManagement c = CommentsManagement.create(user, article, "C", 0);
+        em.persist(a);
+        em.persist(b);
+        em.persist(c);
+        em.flush();
+
+        setCreatedAt(a, "2026-01-01T20:30:00Z");
+        setCreatedAt(b, "2026-01-01T20:20:00Z");
+        setCreatedAt(c, "2026-01-01T20:10:00Z");
+        em.clear();
+
+        List<CommentsManagement> firstFetch = commentRepository.findCommentsPage(article.getId(),
+            null, null, "ASC", 10);
+        List<CommentsManagement> page1 = firstFetch.subList(0, Math.min(10, firstFetch.size()));
+
+        List<String> allContents = new ArrayList<>();
+
+        page1.forEach(cm -> allContents.add(cm.getContent()));
+
+        assertThat(allContents).containsExactly("C", "B", "A");
     }
 
     private void setCreatedAt(CommentsManagement comment, String isoTime) {

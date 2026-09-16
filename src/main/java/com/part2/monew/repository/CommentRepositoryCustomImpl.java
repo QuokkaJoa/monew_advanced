@@ -7,6 +7,7 @@ import static com.part2.monew.entity.QUser.user;
 
 import com.part2.monew.entity.CommentLike;
 import com.part2.monew.entity.CommentsManagement;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -107,7 +108,9 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
     }
 
     @Override
-    public List<CommentsManagement> findCommentsPage(UUID articleId, Timestamp after, UUID cursorId, int limit) {
+    public List<CommentsManagement> findCommentsPage(UUID articleId, Timestamp after, UUID cursorId, String direction, int limit) {
+        boolean asc = "ASC".equalsIgnoreCase(direction);
+
         return queryFactory
             .selectFrom(commentsManagement)
             .join(commentsManagement.user, user).fetchJoin()
@@ -115,26 +118,47 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
             .where(
                 commentsManagement.newsArticle.id.eq(articleId),
                 commentsManagement.active.isTrue(),
-                cursorCondition(after, cursorId)
+                cursorCondition(after, cursorId, asc)
             )
             .orderBy(
-                commentsManagement.createdAt.desc(),
-                commentsManagement.id.desc()
+                orderBy(asc)
             )
             .limit(limit + 1)
             .fetch();
     }
 
-    private BooleanExpression cursorCondition(Timestamp after, UUID cursorId) {
+    private BooleanExpression cursorCondition(Timestamp after, UUID cursorId, boolean asc) {
         if (after == null) {
             return null;
         }
+
+        if (asc) {
+            if (cursorId == null) {
+                return commentsManagement.createdAt.gt(after);
+            }
+            return commentsManagement.createdAt.gt(after)
+                .or(commentsManagement.createdAt.eq(after)
+                    .and(commentsManagement.id.gt(cursorId)));
+        }
+
         if (cursorId == null) {
             return commentsManagement.createdAt.lt(after);
         }
-
         return commentsManagement.createdAt.lt(after)
             .or(commentsManagement.createdAt.eq(after)
                 .and(commentsManagement.id.lt(cursorId)));
+    }
+
+    private OrderSpecifier<?>[] orderBy(boolean asc) {
+        if (asc) {
+            return new OrderSpecifier<?>[]{
+                commentsManagement.createdAt.asc(),
+                commentsManagement.id.asc()
+            };
+        }
+        return new OrderSpecifier<?>[]{
+            commentsManagement.createdAt.desc(),
+            commentsManagement.id.desc()
+        };
     }
 }

@@ -58,7 +58,7 @@ public class CommentPaginationTest extends RedisTestContainerConfig {
 
     List<CommentsManagement> eleven = comments(articleId, 11);
 
-    given(commentRepository.findCommentsPage(articleId, null, null, 10)).willReturn(eleven);
+    given(commentRepository.findCommentsPage(articleId, null, null, "DESC", 10)).willReturn(eleven);
     given(commentRepository.totalCount(articleId)).willReturn(12L);
     given(commentLikeRepository.findLikedCommentIds(eq(userId), anyList()))
         .willReturn(List.of());

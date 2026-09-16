@@ -54,10 +54,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CursorResponse findCommentsByArticleId(CommentRequest req, UUID userId) {
         int limit = CommentCacheStore.limitOf(req);
+        String direction = CommentCacheStore.directionOf(req);
 
         CachedCommentPage page = cacheStore.isCacheable(req)
-            ? cacheStore.getFirstPage(req.articleId())
-            : cacheStore.loadPage(req.articleId(), req.after(), req.cursor(), limit);
+            ? cacheStore.getFirstPage(req.articleId(), direction)
+            : cacheStore.loadPage(req.articleId(), req.after(), req.cursor(), direction, limit);
 
         return assemble(page, userId, limit);
     }

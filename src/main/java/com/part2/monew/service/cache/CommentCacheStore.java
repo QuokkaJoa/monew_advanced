@@ -35,13 +35,13 @@ public class CommentCacheStore {
   }
 
   @DistributedCache(cacheName = CACHE_NAME, key = "'comments:first:' + #articleId")
-  public CachedCommentPage getFirstPage(UUID articleId) {
-    return loadPage(articleId, null, null, DEFAULT_LIMIT);
+  public CachedCommentPage getFirstPage(UUID articleId, String direction) {
+    return loadPage(articleId, null, null, direction, DEFAULT_LIMIT);
   }
 
-  public CachedCommentPage loadPage(UUID articleId, Timestamp after, UUID cursorId, int limit) {
+  public CachedCommentPage loadPage(UUID articleId, Timestamp after, UUID cursorId, String direction, int limit) {
     List<CachedComment> comments = commentRepository
-        .findCommentsPage(articleId, after, cursorId, limit)
+        .findCommentsPage(articleId, after, cursorId, direction, limit)
         .stream()
         .map(CachedComment::from)
         .toList();
@@ -61,7 +61,7 @@ public class CommentCacheStore {
     return req.limit() == null ? DEFAULT_LIMIT : req.limit();
   }
 
-  private static String directionOf(CommentRequest req) {
+  public static String directionOf(CommentRequest req) {
     return req.direction() == null ? "DESC" : req.direction();
   }
 

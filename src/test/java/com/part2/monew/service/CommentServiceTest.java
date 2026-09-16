@@ -48,6 +48,7 @@ public class CommentServiceTest {
             eq(articleId),
             eq(null),
             eq(null),
+            eq("DESC"),
             eq(limit)
         )
     ).willReturn(Collections.emptyList());
@@ -72,6 +73,7 @@ public class CommentServiceTest {
         eq(articleId),
         eq(null),
         eq(null),
+        eq("DESC"),
         eq(limit)
     );
 
