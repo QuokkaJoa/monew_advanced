@@ -79,7 +79,7 @@ class CommentCachePersonalizationTest extends RedisTestContainerConfig {
         .cursor(null)
         .build();
 
-    given(commentRepository.findCommentsPage(articleId, null, null, CommentCacheStore.DEFAULT_LIMIT))
+    given(commentRepository.findCommentsPage(articleId, null, null, "DESC", CommentCacheStore.DEFAULT_LIMIT))
         .willReturn(List.of(view));
     given(commentRepository.totalCount(articleId)).willReturn(1L);
 
@@ -95,7 +95,7 @@ class CommentCachePersonalizationTest extends RedisTestContainerConfig {
     assertThat(r2.getContent().get(0).getLikedByMe()).isFalse();
 
     verify(commentRepository, times(1))
-        .findCommentsPage(articleId, null, null, CommentCacheStore.DEFAULT_LIMIT);
+        .findCommentsPage(articleId, null, null, "DESC", CommentCacheStore.DEFAULT_LIMIT);
   }
 
   private CommentsManagement commentView(

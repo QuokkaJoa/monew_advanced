@@ -60,6 +60,7 @@ public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
         eq(articleId),
         eq(null),
         eq(null),
+        eq("DESC"),
         eq(limit)
     )).willAnswer(invocation -> {
       // 이 람다식은 Repository가 호출될 때 실행됩니다.
@@ -100,6 +101,7 @@ public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
         eq(articleId),
         eq(null),
         eq(null),
+        eq("DESC"),
         eq(limit)
     );
   }
