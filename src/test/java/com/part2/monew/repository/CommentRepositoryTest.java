@@ -186,6 +186,58 @@ class CommentRepositoryTest {
         assertThat(allContents).containsExactly("C", "B", "A");
     }
 
+    @DisplayName("ASC로 다음 페이지를 조회해도 같은 시각 댓글이 누락되지 않는다.")
+    @Transactional
+    @Test
+    void findCommentsPage_ascendingNextPage() {
+        User user = User.builder()
+            .nickname("asc")
+            .email("asc@example.com")
+            .password("123456")
+            .active(true).build();
+        em.persist(user);
+
+        NewsArticle article = new NewsArticle("https://example.com/asc", "제목",
+            Timestamp.from(Instant.now()), "요약", 0L);
+        em.persist(article);
+
+        CommentsManagement a = CommentsManagement.create(user, article, "A", 0);
+        CommentsManagement b = CommentsManagement.create(user, article, "B", 0);
+        CommentsManagement c = CommentsManagement.create(user, article, "C", 0);
+        CommentsManagement d = CommentsManagement.create(user, article, "D", 0);
+        em.persist(a);
+        em.persist(b);
+        em.persist(c);
+        em.persist(d);
+        em.flush();
+
+        setCreatedAt(a, "2026-01-01T18:40:00Z");
+        setCreatedAt(b, "2026-01-01T18:30:00Z");
+        setCreatedAt(c, "2026-01-01T18:30:00Z");
+        setCreatedAt(d, "2026-01-01T18:20:00Z");
+        em.clear();
+
+        int limit = 2;
+
+        List<CommentsManagement> firstFetch = commentRepository.findCommentsPage(article.getId(),
+            null, null, "ASC", limit);
+        List<CommentsManagement> page1 = firstFetch.subList(0, Math.min(limit, firstFetch.size()));
+
+        Timestamp nextAfter = page1.get(page1.size() - 1).getCreatedAt();
+        UUID nextCursorId = page1.get(page1.size() - 1).getId();
+
+        List<CommentsManagement> secondFetch = commentRepository.findCommentsPage(article.getId(),
+            nextAfter, nextCursorId, "ASC", limit);
+        List<CommentsManagement> page2 = secondFetch.subList(0,
+            Math.min(limit, secondFetch.size()));
+        
+        List<String> allContents = new ArrayList<>();
+        page1.forEach(cm -> allContents.add(cm.getContent()));
+        page2.forEach(cm -> allContents.add(cm.getContent()));
+
+        assertThat(allContents).containsExactlyInAnyOrder("A", "B", "C", "D");
+    }
+
     private void setCreatedAt(CommentsManagement comment, String isoTime) {
         em.getEntityManager()
                 .createQuery("update CommentsManagement cm set cm.createdAt = :createdAt where cm.id = :id")

@@ -67,6 +67,24 @@ class CommentControllerTest extends ControllerTestSupport {
     }
 
 
+    @DisplayName("cursor가 UUID 형식이 아니면 400을 반환한다.")
+    @Test
+    void rejectsMalformedCursor() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        // when // then
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/comments")
+                        .param("articleId", UUID.randomUUID().toString())
+                        .param("orderBy", "createdAt")
+                        .param("direction", "DESC")
+                        .param("limit", "10")
+                        .param("cursor", "not-a-uuid")
+                        .header("Monew-Request-User-ID", userId))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+    }
+
+
     @DisplayName("댓글을 생성한다.")
     @Test
     void createComment() throws Exception {
