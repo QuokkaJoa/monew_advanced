@@ -11,6 +11,7 @@ import com.part2.monew.entity.CommentLike;
 import com.part2.monew.entity.CommentsManagement;
 import com.part2.monew.entity.NewsArticle;
 import com.part2.monew.entity.User;
+import com.part2.monew.global.event.ArticleCommentsChanged;
 import com.part2.monew.global.exception.article.ArticleNotFoundException;
 import com.part2.monew.global.exception.comment.CommentIsActiveException;
 import com.part2.monew.global.exception.comment.CommentLikeDuplication;
@@ -29,6 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,8 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class CommentServiceImpl implements CommentService {
 
+    private final ApplicationEventPublisher eventPublisher;
+
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final UserRepository userRepository;
@@ -50,6 +54,7 @@ public class CommentServiceImpl implements CommentService {
     private final NotificationService notificationService;
     private final DataSource dataSource;
     private final CommentCacheStore cacheStore;
+
 
     @Override
     public CursorResponse findCommentsByArticleId(CommentRequest req, UUID userId) {
@@ -83,6 +88,8 @@ public class CommentServiceImpl implements CommentService {
         article.incrementCommentCount();
         articleRepository.save(article);
 
+        eventPublisher.publishEvent(new ArticleCommentsChanged(article.getId()));
+
         return CommentResponse.of(saveComment);
 
     }
@@ -97,6 +104,8 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(CommentNotFoundException::new);
 
         commentsManagement.update(content);
+
+        eventPublisher.publishEvent(new ArticleCommentsChanged(commentsManagement.getNewsArticle().getId()));
 
         return CommentResponse.of(commentsManagement);
     }
@@ -140,6 +149,8 @@ public class CommentServiceImpl implements CommentService {
             );
         }
 
+        eventPublisher.publishEvent(new ArticleCommentsChanged(commentsManagement.getNewsArticle().getId()));
+
         return CommentLikeResponse.of(commentsManagement, saveComment);
     }
 
@@ -161,6 +172,8 @@ public class CommentServiceImpl implements CommentService {
         int totalLike = commentTotalLike(commentsManagement);
 
         commentsManagement.updateTotalCount(totalLike);
+
+        eventPublisher.publishEvent(new ArticleCommentsChanged(commentsManagement.getNewsArticle().getId()));
     }
 
     @Override
@@ -178,6 +191,8 @@ public class CommentServiceImpl implements CommentService {
         articleRepository.save(article);
 
         commentsManagement.delete();
+
+        eventPublisher.publishEvent(new ArticleCommentsChanged(article.getId()));
 
     }
 
