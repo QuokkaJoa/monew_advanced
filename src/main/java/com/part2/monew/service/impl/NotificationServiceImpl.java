@@ -7,27 +7,23 @@ import com.part2.monew.entity.Notification;
 import com.part2.monew.entity.User;
 import com.part2.monew.global.exception.user.NoPermissionToUpdateException;
 import com.part2.monew.repository.NotificationRepository;
-import com.part2.monew.repository.UserRepository;
 import com.part2.monew.service.NotificationService;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
 
     @Transactional
     @Override
