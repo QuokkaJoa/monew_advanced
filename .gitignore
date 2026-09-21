@@ -39,3 +39,8 @@ out/
 .logs
 .env
 /src/main/generated/
+
+### 측정 결과 ###
+# 맥북에서 돌린 리허설 결과는 올리지 않는다. AWS 본측정만 커밋한다.
+benchmark/report-*.html
+!benchmark/report-aws-*.html

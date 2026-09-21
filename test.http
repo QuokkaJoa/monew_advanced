@@ -1,0 +1,2 @@
+GET http://localhost:8080/api/comments?articleId=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee&limit=10&direction=DESC
+Monew-Request-User-ID: 00000000-0000-4000-8000-000000000001

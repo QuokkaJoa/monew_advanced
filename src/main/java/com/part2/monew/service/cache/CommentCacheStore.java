@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
@@ -27,8 +28,12 @@ public class CommentCacheStore {
   private final CommentRepository commentRepository;
   private final CacheManager cacheManager;
 
+  @Value("${monew.cache.enabled:true}")
+  private boolean cacheEnabled;
+
   public boolean isCacheable(CommentRequest req) {
-    return req.after() == null
+    return cacheEnabled
+        && req.after() == null
         && req.cursor() == null
         && "DESC".equalsIgnoreCase(directionOf(req))
         && limitOf(req) == DEFAULT_LIMIT;
