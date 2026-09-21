@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.expression.EvaluationContext;
@@ -29,6 +30,9 @@ public class DistributedCacheAspect {
   private final CacheManager cacheManager;
   private final ExpressionParser parser = new SpelExpressionParser();
 
+  @Value("${monew.cache.lock.enabled:true}")
+  private boolean lockEnabled;
+
   @Around("@annotation(distributedCache)")
   public Object handleCache(ProceedingJoinPoint joinPoint, DistributedCache distributedCache) throws Throwable {
     String cacheKey = generateKey(joinPoint, distributedCache.key());
@@ -42,6 +46,15 @@ public class DistributedCacheAspect {
         log.info("[Cache Hit] CacheName : {}, Key: {}", cacheName, cacheKey);
         return cacheValue;
       }
+    }
+
+    if (!lockEnabled) {
+      Object result = joinPoint.proceed();
+      if (cache != null && result != null) {
+        cache.put(cacheKey, result);
+        log.info("[Cache Put] Key: {}", cacheKey);
+      }
+      return result;
     }
 
     String lockKey = "lock:" + cacheName + ":" + cacheKey;
