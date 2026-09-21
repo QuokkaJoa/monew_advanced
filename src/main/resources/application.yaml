@@ -15,6 +15,10 @@ logging:
     org.springframework.cache: trace
 
 monew:
+  cache:
+    enabled: ${CACHE_ENABLED:true}
+    lock:
+      enabled: ${CACHE_LOCK_ENABLED:true}
   storage:
     type: ${STORAGE_TYPE:local}
     local:
