@@ -129,3 +129,8 @@ CREATE TABLE notifications (
                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+-- Indexes
+CREATE INDEX idx_comments_article_created
+    ON comments_managements (news_article_id, created_at, comment_management_id)
+    WHERE active = TRUE;
