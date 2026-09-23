@@ -9,10 +9,10 @@ ARG PROJECT_VERSION=1.2-M8
 COPY gradlew .
 COPY gradle/ gradle/
 COPY settings.gradle build.gradle ./
-RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
+RUN dnf install -y findutils && chmod +x gradlew && ./gradlew dependencies --no-daemon
 
 COPY src/ src/
-RUN ./gradlew build -x test --no-daemon
+RUN ./gradlew bootJar --no-daemon
 
 # 2. 런타임 스테이지
 FROM amazoncorretto:17
