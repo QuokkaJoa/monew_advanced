@@ -11,7 +11,9 @@ const ARTICLE_ID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 const READER_ID  = '00000000-0000-4000-8000-000000000001';
 const WRITER_ID  = '00000000-0000-4000-8000-000000000002';
 
-const steps = [1, 2, 4, 8, 16].flatMap((mul) => ([
+const STEP_MULS = (__ENV.STEP_MULS || '1,2,4,8,16').split(',').map(Number);
+
+const steps = STEP_MULS.flatMap((mul) => ([
   { target: START_RATE * mul, duration: RAMP },
   { target: START_RATE * mul, duration: STEP_HOLD },
 ]));
@@ -79,7 +81,7 @@ export function writeComment() {
 function totalDuration() {
   const holdSec = toSeconds(STEP_HOLD);
   const rampSec = toSeconds(RAMP);
-  return `${(holdSec + rampSec) * 5}s`;
+  return `${(holdSec + rampSec) * STEP_MULS.length}s`;
 }
 
 function toSeconds(v) {
