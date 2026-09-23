@@ -9,20 +9,18 @@ spring:
       username: ${DB_USERNAME}
       password: ${DB_PASSWORD}
       driver-class-name: org.postgresql.Driver
-      hikari:
-        maximum-pool-size: 50
-        minimum-idle: 30
-        idle-timeout: 30000
+      maximum-pool-size: 50
+      minimum-idle: 30
+      idle-timeout: 30000
 
     replica:
       jdbc-url: jdbc:postgresql://${DB_REPLICA_HOST}:${DB_REPLICA_PORT}/${DB_NAME}
       username: ${DB_USERNAME}
       password: ${DB_PASSWORD}
       driver-class-name: org.postgresql.Driver
-      hikari:
-        maximum-pool-size: 50
-        minimum-idle: 30
-        idle-timeout: 30000
+      maximum-pool-size: 50
+      minimum-idle: 30
+      idle-timeout: 30000
 
   jpa:
     hibernate:
