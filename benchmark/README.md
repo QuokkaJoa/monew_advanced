@@ -190,10 +190,45 @@ AWS 에서는 구간 C 와 D 가 이보다 빨라질 수 있다. 그러면 맥�
 k6 run -e START_RATE=25 k6/test3.js
 
 # 같은 조건 비교 — 네 구간 모두 같은 명령
-k6 run -e START_RATE=100 -e STEP_MULS=1 -e RAMP=1m -e STEP_HOLD=3m k6/test3.js
+k6 run -e START_RATE=100 -e STEP_MULS=1 -e RAMP=10s -e STEP_HOLD=4m k6/test3.js
 ```
 
-같은 조건 비교는 워밍업 1분을 먼저 돌려 버리고 3분을 잰다. 구간당 4분이다.
+같은 조건 비교는 워밍업 1분을 먼저 돌려 버리고 4분 10초를 잰다.
+
+올리는 시간을 10초로 짧게 두는 이유가 있다. 1분에 걸쳐 올리면 그 1분이 측정에 섞이는데, 구간마다 올라가는 모양이 달라서 비교가 흐려진다. **같은 조건 비교는 평지에서 재야 한다.**
+
+## 모니터링
+
+`monitoring/` 에 Prometheus 와 Grafana 설정이 있다. 2026-09-24 로컬 측정에 쓴 그대로다.
+
+```bash
+docker run -d --name prometheus -p 9090:9090 \
+  -v $(pwd)/benchmark/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml \
+  prom/prometheus
+
+docker run -d --name grafana -p 3000:3000 \
+  -v $(pwd)/benchmark/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources \
+  grafana/grafana
+```
+
+`prometheus.yml` 의 `targets` 가 `host.docker.internal:8080` 인데 이건 맥북에서 컨테이너 안이 호스트를 가리키는 이름이다. **AWS 에서는 이 한 줄만 앱 서버 주소로 바꾼다.**
+
+앱은 이미 `/actuator/prometheus` 로 지표를 내보내고 있어서 따로 열 것이 없다.
+
+Grafana 는 `admin / admin` 으로 들어간다. 대시보드는 `4701`(JVM Micrometer)을 import 하면 되는데 커넥션 풀이 빠져 있어 따로 만들어야 한다.
+
+### 볼 것
+
+| 지표 | 왜 |
+|---|---|
+| `hikaricp_connections_active` | 풀별로 본다. 합계로 보면 읽기 풀만 꽉 찬 것을 놓친다 |
+| `hikaricp_connections_pending` | 0 을 벗어나면 요청이 줄을 서기 시작한 것이다 |
+| `hikaricp_connections_max` | 뜨자마자 확인한다. 설정이 안 붙으면 기본값 10 으로 돈다 |
+| `http_server_requests_seconds_count` | 앱이 본 처리량. k6 가 센 값과 맞는지 |
+| `jvm_memory_used_bytes` | 톱니 바닥이 올라가면 누수 |
+| `jvm_gc_pause_seconds_sum` | 응답이 튈 때 GC 때문인지 가른다 |
+
+`http_server_requests_seconds_bucket` 이 없어서 **Grafana 에서는 `p95` 를 못 낸다.** `p95` 는 k6 에서 가져온다.
 
 ## 측정 순서
 
