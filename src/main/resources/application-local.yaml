@@ -47,6 +47,8 @@ server:
 logging:
   level:
     com.part2.monew: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
 
 monew:
   storage:
