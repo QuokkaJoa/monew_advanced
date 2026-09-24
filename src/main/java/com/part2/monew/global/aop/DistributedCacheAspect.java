@@ -43,7 +43,7 @@ public class DistributedCacheAspect {
       Cache.ValueWrapper wrapper = cache.get(cacheKey);
       Object cacheValue = (wrapper != null) ? wrapper.get() : null;
       if (cacheValue != null) {
-        log.info("[Cache Hit] CacheName : {}, Key: {}", cacheName, cacheKey);
+        log.debug("[Cache Hit] CacheName : {}, Key: {}", cacheName, cacheKey);
         return cacheValue;
       }
     }

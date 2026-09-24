@@ -51,7 +51,8 @@ server:
 
 logging:
   level:
-    com.part2.monew: DEBUG
+    com.part2.monew: INFO
+    com.part2.monew.handlerinterceptor.LogInterceptor: WARN
 
 monew:
   batch:
