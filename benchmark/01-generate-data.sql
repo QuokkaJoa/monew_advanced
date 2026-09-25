@@ -124,3 +124,28 @@ ANALYZE users;
 ANALYZE news_articles;
 ANALYZE comments_managements;
 ANALYZE comments_like;
+
+SELECT '댓글 ' || (SELECT count(*) FROM comments_managements)
+    || ' (활성 ' || (SELECT count(*) FROM comments_managements WHERE active) || ')'
+    || ' | 좋아요 ' || (SELECT count(*) FROM comments_like)
+    || ' | 기사 ' || (SELECT count(*) FROM news_articles)
+    || ' | 사용자 ' || (SELECT count(*) FROM users) AS "규모";
+
+WITH per AS (
+  SELECT CASE WHEN news_article_id = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'::uuid THEN 1
+              ELSE (right(news_article_id::text, 12))::bigint END AS num,
+         count(*) AS total, count(*) FILTER (WHERE active) AS act
+    FROM comments_managements GROUP BY 1
+)
+SELECT CASE WHEN num <= 10 THEN '화제 기사' ELSE '롱테일' END AS "구분",
+       count(*) AS "기사 수",
+       min(total) || '~' || max(total) AS "댓글",
+       min(act) || '~' || max(act) AS "활성"
+FROM per GROUP BY 1 ORDER BY 2;
+
+WITH c AS (SELECT user_id, count(*) n FROM comments_managements GROUP BY 1)
+SELECT CASE WHEN n = 1 THEN '댓글 1개만' WHEN n <= 10 THEN '2~10개'
+            WHEN n <= 100 THEN '11~100개' ELSE '100개 넘게' END AS "작성자 구간",
+       count(*) AS "사람 수",
+       round(100.0 * sum(n) / (SELECT count(*) FROM comments_managements), 1) AS "이들이 쓴 댓글 비율"
+FROM c GROUP BY 1 ORDER BY min(n);
