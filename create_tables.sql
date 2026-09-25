@@ -134,3 +134,6 @@ CREATE TABLE notifications (
 CREATE INDEX idx_comments_article_created
     ON comments_managements (news_article_id, created_at, comment_management_id)
     WHERE active = TRUE;
+
+CREATE INDEX idx_comments_like_user_comment
+    ON comments_like (user_id, comment_management_id);
