@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import { Counter } from 'k6/metrics';
+import exec from 'k6/execution';
 
 const BASE_URL   = __ENV.BASE_URL   || 'http://127.0.0.1:8080';
 const START_RATE = Number(__ENV.START_RATE || 100);
@@ -26,6 +27,7 @@ const HOT = ALL_HOT.slice(0, HOT_COUNT);
 
 const readsHot  = new Counter('reads_hot');
 const readsTail = new Counter('reads_tail');
+const stepReqs  = new Counter('step_reqs');
 
 const STEP_MULS = (__ENV.STEP_MULS || '1,2,4,8,16').split(',').map(Number);
 
@@ -33,6 +35,19 @@ const steps = STEP_MULS.flatMap((mul) => ([
   { target: START_RATE * mul, duration: RAMP },
   { target: START_RATE * mul, duration: STEP_HOLD },
 ]));
+
+const RAMP_SEC = toSeconds(RAMP);
+const HOLD_SEC = toSeconds(STEP_HOLD);
+const STEP_SEC = RAMP_SEC + HOLD_SEC;
+const TARGETS = STEP_MULS.map((mul) => START_RATE * mul);
+
+function currentStep() {
+  const elapsed = exec.instance.currentTestRunDuration / 1000;
+  const index = Math.floor(elapsed / STEP_SEC);
+  if (index < 0 || index >= TARGETS.length) return 'ramp';
+  if (elapsed - index * STEP_SEC < RAMP_SEC) return 'ramp';
+  return String(TARGETS[index]);
+}
 
 const scenarios = {
   reader: {
@@ -58,12 +73,21 @@ if (WRITE_RATE > 0) {
   };
 }
 
+const stepThresholds = { 'step_reqs{step:ramp}': ['count>0'] };
+for (const target of TARGETS) {
+  stepThresholds[`http_req_duration{step:${target}}`] = ['p(95)<300', 'avg<300'];
+  stepThresholds[`step_reqs{step:${target}}`] = ['count>0'];
+}
+
 export const options = {
   scenarios,
-  thresholds: {
-    http_req_failed: ['rate<0.01'],
-    dropped_iterations: ['count<100'],
-  },
+  thresholds: Object.assign(
+    {
+      http_req_failed: ['rate<0.01'],
+      dropped_iterations: ['count<100'],
+    },
+    stepThresholds,
+  ),
 };
 
 function randomUserId() {
@@ -82,14 +106,16 @@ function pickArticle() {
 
 export function readFirstPage() {
   const article = pickArticle();
+  const step = currentStep();
   const url = `${BASE_URL}/api/comments?articleId=${article.id}&limit=10&direction=DESC`;
   const res = http.get(url, {
     headers: {
       'Content-Type': 'application/json',
       'Monew-Request-User-ID': randomUserId(),
     },
-    tags: { op: 'read' },
+    tags: { op: 'read', step },
   });
+  stepReqs.add(1, { step });
   if (article.hot) {
     readsHot.add(1);
   } else {
@@ -100,6 +126,7 @@ export function readFirstPage() {
 
 export function writeComment() {
   const article = pickArticle();
+  const step = currentStep();
   const res = http.post(
     `${BASE_URL}/api/comments`,
     JSON.stringify({
@@ -109,9 +136,10 @@ export function writeComment() {
     }),
     {
       headers: { 'Content-Type': 'application/json' },
-      tags: { op: 'write' },
+      tags: { op: 'write', step },
     },
   );
+  stepReqs.add(1, { step });
   check(res, { 'write 200': (r) => r.status === 200 });
 }
 
