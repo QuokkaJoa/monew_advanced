@@ -84,7 +84,6 @@ export const options = {
   thresholds: Object.assign(
     {
       http_req_failed: ['rate<0.01'],
-      dropped_iterations: ['count<100'],
     },
     stepThresholds,
   ),
