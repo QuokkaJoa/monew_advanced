@@ -30,7 +30,7 @@ public class DistributedCacheAspect {
   private final CacheManager cacheManager;
   private final ExpressionParser parser = new SpelExpressionParser();
 
-  @Value("${monew.cache.lock.enabled:true}")
+  @Value("${monew.cache.lock.enabled:false}")
   private boolean lockEnabled;
 
   @Around("@annotation(distributedCache)")
