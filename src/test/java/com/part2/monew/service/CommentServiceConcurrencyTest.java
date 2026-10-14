@@ -24,7 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@SpringBootTest
+@SpringBootTest(properties = "monew.cache.lock.enabled=true")
 @ActiveProfiles("test")
 public class CommentServiceConcurrencyTest extends RedisTestContainerConfig {
 
