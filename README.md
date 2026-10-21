@@ -245,5 +245,5 @@ springdoc-openapi 사용
 
 ## 프로젝트 설치 방법
 1. git clone https://github.com/QuokkaJoa/monew_advanced.git
-2. 환경 변수 파일 만들기
+2. cp .env.example .env
 3. docker compose up -d
